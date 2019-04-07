@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 contract DataControl{
     struct FileInfoSave {
-        uint256 number;  //设备唯一标识
+        uint256 number;  //设备唯一标
         uint256 file_number;  //文件序号
         uint8 data_type;  //数据类型
         uint256 size;  //文件大小
