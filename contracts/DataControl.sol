@@ -77,6 +77,7 @@ contract DataControl{
         uint256[] memory _number = new uint256[](length);
         uint256[] memory _file_number = new uint256[](length);
         uint256[] memory i = new uint256[](2);
+        i[0] = start;
         i[1] = start + length;
         for( ; i[0] < i[1]; i[0]++){
             _number[i[0] - start] = fileInfoSave[i[0]].number;
@@ -89,6 +90,7 @@ contract DataControl{
         uint8[] memory _data_type = new uint8[](length);
         uint256[] memory _size = new uint256[](length);
         uint256[] memory i = new uint256[](2);
+        i[0] = start;
         i[1] = start + length;
         for( ;i[0] < i[1]; i[0]++){
             _data_type[i[0] - start] = fileInfoSave[i[0]].data_type;
@@ -101,6 +103,7 @@ contract DataControl{
         address[] memory _user = new address[](length);
         string[] memory _period = new string[](length);
         uint256[] memory i = new uint256[](2);
+        i[0] = start;
         i[1] = start + length;
         for( ; i[0] < i[1]; i[0]++){
             _user[i[0] - start] = fileInfoSave[i[0]].user;
@@ -113,6 +116,7 @@ contract DataControl{
         string[] memory _area = new string[](length);
         string[] memory _file_addr = new string[](length);
         uint256[] memory i = new uint256[](2);
+        i[0] = start;
         i[1] = start + length;
         for( ; i[0] < i[1]; i[0]++){
             _area[i[0] - start] = fileInfoSave[i[0]].area;
@@ -125,6 +129,7 @@ contract DataControl{
         uint256[] memory _file_hash = new uint256[](length);
         uint256[] memory _key = new uint256[](length);
         uint256[] memory i = new uint256[](2);
+        i[0] = start;
         i[1] = start + length;
         for( ; i[0] < i[1]; i[0]++){
             _file_hash[i[0] - start] = fileInfoSave[i[0]].file_hash;
