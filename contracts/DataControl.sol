@@ -26,9 +26,9 @@ contract DataControl{
         require(msg.sender == owner);
         _;
     }
-    
+
     event FileInfoOk(uint16 length);
-    
+
 //    modifier only
 
     function getaddr() public view returns(address){
@@ -51,9 +51,10 @@ contract DataControl{
     function SetLength(uint16 _length) public onlyOwner{
         length = _length;
     }
-    
+
     function ChangeOwner(address _owner) public onlyOwner{
         owner = _owner;
+        
     }
 
     function set_file_list(uint256 number, uint256 file_number, uint8 data_type, uint256 size, address user, string memory period, string memory area, string memory file_addr, uint256 file_hash, uint256 key) public{
@@ -77,9 +78,8 @@ contract DataControl{
         uint256[] memory _number = new uint256[](length);
         uint256[] memory _file_number = new uint256[](length);
         uint256[] memory i = new uint256[](2);
-        i[0] = start;
         i[1] = start + length;
-        for( ; i[0] < i[1]; i[0]++){
+        for(i[0] = start; i[0] < i[1]; i[0]++){
             _number[i[0] - start] = fileInfoSave[i[0]].number;
             _file_number[i[0] - start] = fileInfoSave[i[0]].file_number;
         }
@@ -90,9 +90,8 @@ contract DataControl{
         uint8[] memory _data_type = new uint8[](length);
         uint256[] memory _size = new uint256[](length);
         uint256[] memory i = new uint256[](2);
-        i[0] = start;
         i[1] = start + length;
-        for( ;i[0] < i[1]; i[0]++){
+        for(i[0] = start; i[0] < i[1]; i[0]++){
             _data_type[i[0] - start] = fileInfoSave[i[0]].data_type;
             _size[i[0] - start] = fileInfoSave[i[0]].size;
         }
@@ -103,9 +102,8 @@ contract DataControl{
         address[] memory _user = new address[](length);
         string[] memory _period = new string[](length);
         uint256[] memory i = new uint256[](2);
-        i[0] = start;
         i[1] = start + length;
-        for( ; i[0] < i[1]; i[0]++){
+        for(i[0] = start; i[0] < i[1]; i[0]++){
             _user[i[0] - start] = fileInfoSave[i[0]].user;
             _period[i[0] - start] = fileInfoSave[i[0]].period;
         }
@@ -116,9 +114,8 @@ contract DataControl{
         string[] memory _area = new string[](length);
         string[] memory _file_addr = new string[](length);
         uint256[] memory i = new uint256[](2);
-        i[0] = start;
         i[1] = start + length;
-        for( ; i[0] < i[1]; i[0]++){
+        for(i[0] = start; i[0] < i[1]; i[0]++){
             _area[i[0] - start] = fileInfoSave[i[0]].area;
             _file_addr[i[0] - start] = fileInfoSave[i[0]].file_addr;
         }
@@ -129,9 +126,8 @@ contract DataControl{
         uint256[] memory _file_hash = new uint256[](length);
         uint256[] memory _key = new uint256[](length);
         uint256[] memory i = new uint256[](2);
-        i[0] = start;
         i[1] = start + length;
-        for( ; i[0] < i[1]; i[0]++){
+        for(i[0] = start; i[0] < i[1]; i[0]++){
             _file_hash[i[0] - start] = fileInfoSave[i[0]].file_hash;
             _key[i[0] - start] = fileInfoSave[i[0]].key;
         }
