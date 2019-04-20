@@ -28,7 +28,7 @@ contract IpControl{
         owner = _owner;
     }
 
-    function set_ip(uint256 number, string memory ip, address user, string memory area) external{
+    function set_ip(uint256 number, string memory ip, address user, string memory area) public{
         IpUser memory _ipUser = IpUser({
             Number: number,
             Ip: ip,
@@ -39,7 +39,7 @@ contract IpControl{
         if(ip_save.length % length == 0) emit IpIfOk(length);
     }
 
-    function getIp() external view onlyOwner returns(uint256[] memory, string[] memory, address[] memory, string[]){
+    function getIp() external view onlyOwner returns(uint256[] memory, string[] memory, address[] memory, string[] memory){
         uint256[] memory _number = new uint256[](length);
         string[] memory _ip = new string[](length);
         address[] memory _user = new address[](length);
