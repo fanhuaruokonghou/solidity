@@ -1,8 +1,10 @@
 pragma solidity ^0.5.0;
 // pragma experimental ABIEncoderV2;
 import './transaction.sol';
+import './DataControl.sol';
+import './IpControl.sol';
 
-contract TxControl is transaction{
+contract TxControl is transaction, DataControl, IpControl{
     struct txSave{  //非定制数据数据交易
         address buyer;  //买家
         address seller;  //卖家
