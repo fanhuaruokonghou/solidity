@@ -1,10 +1,10 @@
 pragma solidity ^0.5.0;
-// pragma experimental ABIEncoderV2;
+pragma experimental ABIEncoderV2;
 import './transaction.sol';
 import './DataControl.sol';
 import './IpControl.sol';
 
-contract TxControl is transaction, DataControl, IpControl{
+contract TxControl is transaction{
     struct txSave{  //非定制数据数据交易
         address buyer;  //买家
         address seller;  //卖家
@@ -93,10 +93,10 @@ contract TxControl is transaction, DataControl, IpControl{
     //确认非定制数据交易
     function makeSureTx(uint256 i) public onlyOwnerTx(i){
         if(txList[i].txType == 1){
-            afterYYQtransaction(txList[i].seller, txList[i].value);
+            afterYYQtransaction(txList[i].buyer, txList[i].seller, txList[i].value);
         }
         if(txList[i].txType == 2){
-            afterSYQtransaction(txList[i].seller, txList[i].value);
+            afterSYQtransaction(txList[i].buyer, txList[i].seller, txList[i].value);
         }
         emit confirmTx(i);
     }
@@ -136,16 +136,17 @@ contract TxControl is transaction, DataControl, IpControl{
     //非定制数据数据交易退款
     function refundData(uint256 i) public onlyOwnerTx(i) {
         if(txList[i].txType == 1){
-            afterYYQtransaction(txList[i].buyer, txList[i].value);
+            afterYYQtransaction(txList[i].buyer,txList[i].seller, txList[i].value);
         }
         if(txList[i].txType == 2){
             afterSYQtransaction(txList[i].buyer, txList[i].value);
         }
     }
 
-    //定制数据数据交易退款
+    // 定制数据数据交易退款
     function refundRealTime(uint256 i) public onlyOwnerRealTimeTx(i) {
-        afterSSDZtransaction(txRealTimeList[i].buyer, txRealTimeList[i].value * collectionAddress[txRealTimeList[i].buyer].length);
+        uint256 number = collectionAddress[txRealTimeList[i].buyer].length;
+        afterSSDZtransaction(txRealTimeList[i].buyer, txRealTimeList[i].value * number);
     }
 
 }
