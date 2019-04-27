@@ -6,13 +6,13 @@ contract DataControl{
         uint256 number;  //设备唯一标识
         uint256 file_number;  //文件序号
         uint8 data_type;  //数据类型
-        uint256 size;  //文件大小
+        string size;  //文件大小
         address user;  //账户
         string period;  //时段
         string area;  //地区
         string file_addr;  //文件索引
-        uint256 file_hash;  //文件校验Hash
-        uint256 key;  //AES256位密钥
+        string file_hash;  //文件校验Hash
+        string key;  //AES256位密钥
     }
 
     address public owner = msg.sender;
@@ -57,7 +57,7 @@ contract DataControl{
         
     }
 
-    function set_file_list(uint256 number, uint256 file_number, uint8 data_type, uint256 size, address user, string memory period, string memory area, string memory file_addr, uint256 file_hash, uint256 key) public{
+    function set_file_list(uint256 number, uint256 file_number, uint8 data_type, string memory size, address user, string memory period, string memory area, string memory file_addr, string memory file_hash, string memory key) public{
         FileInfoSave memory data = FileInfoSave({
             number: number,
             file_number: file_number,
@@ -86,9 +86,9 @@ contract DataControl{
         return (_number, _file_number);
     }
 
-    function get2_3() public view onlyOwner returns(uint8[] memory, uint256[] memory){
+    function get2_3() public view onlyOwner returns(uint8[] memory, string[] memory){
         uint8[] memory _data_type = new uint8[](length);
-        uint256[] memory _size = new uint256[](length);
+        string[] memory _size = new string[](length);
         uint256[] memory i = new uint256[](2);
         i[1] = start + length;
         for(i[0] = start; i[0] < i[1]; i[0]++){
@@ -122,9 +122,9 @@ contract DataControl{
         return (_area, _file_addr);
     }
 
-    function get8_9() public view onlyOwner returns(uint256[] memory, uint256[] memory){
-        uint256[] memory _file_hash = new uint256[](length);
-        uint256[] memory _key = new uint256[](length);
+    function get8_9() public view onlyOwner returns(string[] memory, string[] memory){
+        string[] memory _file_hash = new string[](length);
+        string[] memory _key = new string[](length);
         uint256[] memory i = new uint256[](2);
         i[1] = start + length;
         for(i[0] = start; i[0] < i[1]; i[0]++){
