@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import './transaction.sol';
 
 contract TxControl is transaction{
-    struct txSave{  //非实时数据交易
+    struct txSave{  //非定制数据数据交易
         address buyer;  //买家
         address seller;  //卖家
         uint256[] fileNumberList;  //文件序号列表
@@ -13,39 +13,50 @@ contract TxControl is transaction{
         uint256 value;  //交易金额
     } 
 
-    struct txSaveRealTime{  //实时数据交易
+    struct txSaveRealTime{  //定制数据数据交易
         address buyer;  //买家
         string ipOrEigenvalues;  //ip或者特征值
         string publicKeyCheck;  //公钥及校验
         bool txStatus;  //交易状态  
         uint256 value;  //交易金额
-        uint32 accountsNumber;
+        uint32 accountsNumber;  //设置可接受的节点数量
     }
 
-    mapping(address => address[]) public collectionAddress;  //收款地址
+    mapping(address => address[]) public collectionAddress;  //收款地址列表
     address owner = msg.sender;
-    txSave[] txList;  //非实时交易列表
-    txSaveRealTime[] txRealTimeList;  //实时交易列表
+    txSave[] txList;  //非定制数据交易列表
+    txSaveRealTime[] txRealTimeList;  //定制数据交易列表
     // uint256 txPending = 0;  //交易
-    event addTx(address seller, uint256[] fileNUmberList, string publicKeyCheck);  //添加非实时交易时触发
+    event addTx(address seller, uint256[] fileNUmberList, string publicKeyCheck);  //添加非定制数据交易时触发
     event addRealTimeTx(string publicKeyCheck, string ipOrEigenvalues);
-    event confirmTx(uint256 i);  //确认非实时交易
-    event confirmRealTimeTx(uint256 i);  //确认实时交易
+    event confirmTx(uint256 i);  //确认非定制数据交易
+    event confirmRealTimeTx(uint256 i);  //确认定制数据交易
 
-    modifier onlyBuyerOrOwner(uint256 i){  //非实时的交易
-        require(txList[i].buyer == msg.sender || owner == msg.sender);
+    modifier onlyOwnerTx(uint256 i){  //非定制数据的交易
+        require(owner == msg.sender);
         require(!txList[i].txStatus);
         _;
     }
 
-    modifier onlyBuyerOrOwnerRealTime(uint256 i){  //实时的交易
-        require(txRealTimeList[i].buyer == msg.sender || owner == msg.sender);
-        require(!txList[i].txStatus);
+    modifier onlyOwnerRealTimeTx(uint256 i){  //定制数据的交易
+        require(owner == msg.sender);
+        require(!txRealTimeList[i].txStatus);
         _;
     }
 
-    //添加非实时交易
-    function buyData(address _seller, uint256[] memory _fileNumberList, string memory _publicKeyCheck, uint8 _txType, uint256 _value) public returns(uint256){
+    //检验非定制数据购买数据账户的余额
+    modifier checkBalanceOfBuyData(address buyer, uint256 value){
+        require(_balances[buyer] > value);
+        _;
+    }
+
+    //检查代币余额是否充足
+    modifier checkBalanceOfBuyRealTimeData(address buyer, uint256 value, uint32 accountsNumber){
+        require(_balances[buyer] > value * accountsNumber);
+        _;
+    }
+    //添加非定制数据交易
+    function buyData(address _seller, uint256[] memory _fileNumberList, string memory _publicKeyCheck, uint8 _txType, uint256 _value) public checkBalanceOfBuyData(msg.sender, _value) returns(uint256){
          txSave memory txData = txSave({
             buyer: msg.sender,
             seller: _seller,
@@ -61,8 +72,8 @@ contract TxControl is transaction{
         return txList.length;
     }
 
-    //购买定制数据
-    function buyRealTimeData(string memory _publicKeyCheck, string memory _ipOrEigenvalues, uint256 _value, uint32 _accountsNumber) public {
+    //购买定制数据数据
+    function buyRealTimeData(string memory _publicKeyCheck, string memory _ipOrEigenvalues, uint256 _value, uint32 _accountsNumber) public checkBalanceOfBuyRealTimeData(msg.sender, _value, _accountsNumber) returns(uint256){
         txSaveRealTime memory txRealTimeData = txSaveRealTime({
             buyer: msg.sender,
             publicKeyCheck: _publicKeyCheck,
@@ -72,19 +83,20 @@ contract TxControl is transaction{
             accountsNumber: _accountsNumber
         });
         txRealTimeList.push(txRealTimeData);
-        emit addRealTimeTx(_publicKeyCheck, _ipOrEigenvalues);
         beforeSSDZtransaction(_value, msg.sender);
+        emit addRealTimeTx(_publicKeyCheck, _ipOrEigenvalues);
+        return txRealTimeList.length;
     }
 
-    //确认非实时交易
-    function makeSureTx(uint256 i) public onlyBuyerOrOwner(i){
-        emit confirmTx(i);
+    //确认非定制数据交易
+    function makeSureTx(uint256 i) public onlyOwnerTx(i){
         if(txList[i].txType == 1){
             afterYYQtransaction(txList[i].seller, txList[i].value);
         }
         if(txList[i].txType == 2){
             afterSYQtransaction(txList[i].seller, txList[i].value);
         }
+        emit confirmTx(i);
     }
 
     //设置连接账户
@@ -92,11 +104,46 @@ contract TxControl is transaction{
         collectionAddress[msg.sender] = addressList;
     }
 
-    //定制数据交易确认
-    function makeSureRealTimeTx(uint256 i) public onlyBuyerOrOwnerRealTime(i){
-        emit confirmRealTimeTx(i);
-        afterSSDZtransaction(collectionAddress[msg.sender], txRealTimeList[i].value);
+    //定制数据数据交易确认
+    function makeSureRealTimeTx(uint256 i) public onlyOwnerRealTimeTx(i){
+        for(uint256 j = 0; j < collectionAddress[msg.sender].length; j++){
+            afterSSDZtransaction(collectionAddress[msg.sender][j], txRealTimeList[i].value);
+        }
         delete collectionAddress[msg.sender];
+        emit confirmRealTimeTx(i);
+    }
+
+    //检查非定制数据交易的发起人
+    function checkDataTxOwner(address buyer, uint256 i) public view returns(bool){
+        if(buyer == txList[i].buyer){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    //检查定制数据交易的发起人
+    function checkRealTimeTxOwner(address buyer, uint256 i) public view returns(bool){
+        if(buyer == txRealTimeList[i].buyer){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    //非定制数据数据交易退款
+    function refundData(uint256 i) public onlyOwnerTx(i) {
+        if(txList[i].txType == 1){
+            afterYYQtransaction(txList[i].buyer, txList[i].value);
+        }
+        if(txList[i].txType == 2){
+            afterSYQtransaction(txList[i].buyer, txList[i].value);
+        }
+    }
+
+    //定制数据数据交易退款
+    function refundRealTime(uint256 i) public onlyOwnerRealTimeTx(i) {
+        afterSSDZtransaction(txRealTimeList[i].buyer, txRealTimeList[i].value * collectionAddress[txRealTimeList[i].buyer].length);
     }
 
 }

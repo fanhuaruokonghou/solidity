@@ -48,7 +48,7 @@ contract transaction is MyAdvancedToken {
         emit SuccessFunds(_from, true);
   }
   
-    //使用权交易的实现（交易金额转给卖家）
+    //使用权交易的实现（交易金额转给卖家或买家）
     function afterSYQtransaction(address _to, uint256 totalprice) public whenNotPaused {
         _transfer(address(this), _to, totalprice);
     }
@@ -67,11 +67,9 @@ contract transaction is MyAdvancedToken {
         emit SuccessFunds(_from, true);
   }
   
-    //实时定制交易的实现（交易金额转给卖家）
-    function afterSSDZtransaction(address[] memory _to, uint256 totalprice) public whenNotPaused {
-        for(uint256 i = 0; i < _to.length; i++){
-            _transfer(address(this), _to[i], totalprice);
-        }
+    //实时定制交易的实现（交易金额转给卖家或买家）
+    function afterSSDZtransaction(address _to, uint256 totalprice) public whenNotPaused {
+        _transfer(address(this), _to, totalprice);
     }
     
     
