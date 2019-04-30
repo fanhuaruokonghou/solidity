@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 contract owned {
+    
     address payable public owner; //合约管理者
 //初始化构造
     constructor() public {

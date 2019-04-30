@@ -1,21 +1,15 @@
 pragma solidity ^0.5.0;
 
-
-import "./ERC20 TOKEN.sol";
-
-/******************************************/
-
-/*       ADVANCED TOKEN STARTS HERE       */
-
-/******************************************/
+import "./TokenERC20.sol";
 
 contract MyAdvancedToken is TokenERC20 {
+    
     uint256 public withdrawPrice = 9;//提现汇率,一个代币，可以卖出多少个以太币，单位是wei
     uint256 public rechargePrice = 10;//充值汇率,买一个代币需要花多少以太币
     uint256 public initialSupply=100000; //设置代币的总发行量
     string public tokenName= "er"; //设置代币名称
     string public tokenSymbol= "e";    //设置代币符号
-    uint256 public amount1; //合约拥有的以太币总数
+    uint public amount1; //合约拥有的以太币总数
 
     mapping (address => bool) public frozenAccount;//是否冻结帐户的列表
     
@@ -29,10 +23,10 @@ contract MyAdvancedToken is TokenERC20 {
     /**
      * _from:代币发送者地址,_to:代币接收者地址,_value:转移的代币数量
      */
-    function _transfer(address _from, address _to, uint256 _value) internal {
+    function _transfer(address _from, address _to, uint _value) internal {
         require (_to != address(0));                        // 确保目标地址不为0x0，因为0x0地址代表销毁
         require (_balances[_from] >= _value);               // 检查发送者余额
-        require (_balances[_to] + _value > _balances[_to]); // 确保转移为正数个
+        require (_balances[_to] + _value >= _balances[_to]); // 确保转移为正数个或0个
         require(!frozenAccount[_from]);                     // 检查发送者账户是否冻结
         require(!frozenAccount[_to]);                       // 检查接收者账户是否冻结
         _balances[_from] -= _value;                         // 从发送代币的账户中减去转移的代币数
@@ -73,15 +67,15 @@ contract MyAdvancedToken is TokenERC20 {
      * newwithdrawPrice:新的提现汇率,newrechargePrice:新的充值汇率
      */ 
     function setPrices(uint256 newwithdrawPrice, uint256 newrechargePrice) onlyOwner public whenNotPaused{
-        if(newwithdrawPrice <= newrechargePrice){
-            withdrawPrice = newwithdrawPrice;
-            rechargePrice = newrechargePrice;
-        }
+       if(newwithdrawPrice <= newrechargePrice){
+        withdrawPrice = newwithdrawPrice;
+        rechargePrice = newrechargePrice; 
+       }
     }
     
 //充值
     function recharge() payable public whenNotPaused{
-        uint256 amount = msg.value / rechargePrice;        // 计算用户充值的以太币可以购买的代币数量
+        uint amount = msg.value / rechargePrice;        // 计算用户充值的以太币可以购买的代币数量
         _transfer(address(this), msg.sender, amount);   // 将代币发送给购买账户
     }
 
@@ -89,8 +83,6 @@ contract MyAdvancedToken is TokenERC20 {
     /**
      * amount:提现的代币数
      */ 
-    /// @notice withdraw `amount` tokens to contract
-    /// @param amount amount of tokens to be sold
     function withdraw(uint256 amount) public whenNotPaused{
         require(address(this).balance >= amount * withdrawPrice);  // 检查合约地址中的以太币是否充足
         _transfer(msg.sender, address(this), amount);              // 将代币从提现账户发送到合约地址
@@ -118,6 +110,7 @@ contract MyAdvancedToken is TokenERC20 {
     
 //向合约中转入以太币
     function transferHeyue() payable public whenNotPaused{
+       //msg.value可表示想要向合约中发送以太币
     }
     
 }

@@ -1,9 +1,11 @@
 pragma solidity ^0.5.0;
-import "./pausable.sol";
 
 interface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes calldata _extraData ) external; }
 
+import "./pausable.sol";
+
 contract TokenERC20 is pausable {
+    
     string public name; //代币名称
     string public symbol; //代币符号
     uint8 public decimals = 18;  // decimals 可以有的小数点个数，最小的代币单位。18 是建议的默认值
@@ -59,7 +61,7 @@ contract TokenERC20 is pausable {
         // 检查发送者余额
         require(_balances[_from] >= _value);
         // 确保转移为正数个
-        require(_balances[_to] + _value > _balances[_to]);
+        require(_balances[_to] + _value >= _balances[_to]);
         // 转移前两账户的代币总数
         uint previousBalances = _balances[_from] + _balances[_to];
         // 从发送代币的账户中减去转移的代币数
@@ -85,8 +87,10 @@ contract TokenERC20 is pausable {
      * _from:发送者地址,_to:接收者地址,_value:转移的代币数量
      */
     function transferFrom(address payable _from, address payable _to, uint256 _value) onlyOwner external whenNotPaused returns (bool) {
-        require(_value <= _allowed[owner][_from]);     // 检查转移的代币数量是否小于账户被允许的最大花销
-        _allowed[owner][_from] -= _value;  //将发送者账户被允许花费的最大总额度减去转移的代币数
+        require(_value <= _allowed[owner][_from] || _allowed[owner][_from]==0);     // 检查转移的代币数量是否小于账户被允许的最大花销，被限制最大花销为0时意味着该用户的最大花销不受限制
+        if(_allowed[owner][_from] != 0){
+            _allowed[owner][_from] -= _value;  //将发送者账户被允许花费的最大总额度减去转移的代币数   
+        }
         _transfer(_from, _to, _value); //将`_value`个代币从发送者账户转移到接收者账户
         return true;
     }
@@ -118,9 +122,7 @@ contract TokenERC20 is pausable {
      */
     function burnFrom(address _from, uint256 _value) onlyOwner public whenNotPaused returns (bool success) {
         require(_balances[_from] >= _value);        // 检查被销毁代币的账户中的代币数是否大于被销毁的代币数
-        require(_value <= _allowed[owner][_from]);   //检查被销毁的代币数量是否小于账户被允许的最大花销
         _balances[_from] -= _value;                 // 从被销毁代币的账户中减去销毁的代币数
-        _allowed[owner][_from] -= _value;           // 将发送者账户被允许花费的最大总额度减去销毁的代币数
         _totalSupply -= _value;                     // 更新代币总供应量
         emit Burn(_from, _value);
         return true;
