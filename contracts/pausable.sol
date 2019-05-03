@@ -19,13 +19,13 @@ contract pausable is owned {
         _;
     } 
 
-    function pause() external onlyOwner whenNotPaused returns (bool){
+    function pauseTransaction() external onlyOwner whenNotPaused returns (bool){
         paused = true;
         emit Pause();
         return true;
     }
 
-    function unpause() public onlyOwner whenPaused returns (bool){
+    function unpauseTransaction() public onlyOwner whenPaused returns (bool){
         paused = false;
         emit Unpause();
         return true;

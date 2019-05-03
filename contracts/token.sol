@@ -35,10 +35,14 @@ contract token is pausable {
         return _totalSupply;
     }
 
-    function balanceOf(address who) external view returns (uint256) {
-        return _balances[who];
+    function balanceOf() external view returns (uint256) {
+        return _balances[msg.sender];
     }
     
+    function balanceOfOnlyOwner(address who) external view onlyOwner returns (uint256) {
+        return _balances[who];
+    }
+
     function allowance(address owner, address spender) external view returns (uint256) {
         return _allowed[owner][spender];
     } 
