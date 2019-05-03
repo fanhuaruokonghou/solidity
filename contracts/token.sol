@@ -31,6 +31,18 @@ contract token is pausable {
         symbol = tokenSymbol;                              
     }
 
+    function totalSupply() external view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address who) external view returns (uint256) {
+        return _balances[who];
+    }
+    
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return _allowed[owner][spender];
+    } 
+
     function _transfer(address _from, address _to, uint _value) internal {
         require(_to != address(0));
         require(_balances[_from] >= _value);
@@ -43,10 +55,40 @@ contract token is pausable {
         emit Transfer(_from, _to, _value);
         assert(_balances[_from] + _balances[_to] == previousBalances);
     }
+
+    function transfer(address  _to, uint256 _value) external whenNotPaused returns (bool) {
+        require (msg.data.length==68);        
+        _transfer(msg.sender, _to, _value);
+    }
+
+    function transferFrom(address payable _from, address payable _to, uint256 _value) onlyOwner external whenNotPaused returns (bool) {
+        require(_value <= _allowed[owner][_from] || _allowed[owner][_from]==0);    
+        if(_allowed[owner][_from] != 0){
+            _allowed[owner][_from] -= _value;   
+        }
+        _transfer(_from, _to, _value); 
+        return true;
+    }
+
+    function approve(address _spender, uint256 _value) onlyOwner external whenNotPaused returns (bool) {
+        _allowed[owner][_spender] = _value;
+        return true;
+    }
+    
+    function mintToken(address target, uint256 mintedAmount) onlyOwner public whenNotPaused{
+        _balances[target] += mintedAmount; 
+        _totalSupply += mintedAmount; 
+        emit Transfer(address(0), address(this), mintedAmount);
+        emit Transfer(address(this), address(target), mintedAmount);
+    }
     
     function freezeAccount(address target, bool freeze) onlyOwner public whenNotPaused{
         frozenAccount[target] = freeze;  
         emit FrozenFunds(target, freeze);
+    }
+
+    function ifAccountFrozen(address account) external view returns (bool) {
+        return frozenAccount[account];
     }
 
     function setPrices(uint256 newwithdrawPrice, uint256 newrechargePrice) onlyOwner public whenNotPaused{
@@ -80,5 +122,5 @@ contract token is pausable {
     
     function transferHeyue() payable public whenNotPaused{
        
-    }    
+    }
 }

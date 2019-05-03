@@ -17,7 +17,7 @@ contract pausable is owned {
     modifier whenPaused {
         require(paused);
         _;
-    }
+    } 
 
     function pause() external onlyOwner whenNotPaused returns (bool){
         paused = true;

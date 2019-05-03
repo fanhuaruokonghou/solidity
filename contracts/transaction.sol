@@ -6,13 +6,11 @@ contract transaction is token {
     
     uint256 constant DAY_IN_SECONDS = 86400; 
     uint256 constant MONTH_IN_SECONDS = 2592000; 
-    uint256 private currTimeInSeconds; 
     uint256 private lastbuytimeInSeconds; 
     uint256 private timeinterval;
-    uint256 private totalbuyerpayment;
+    uint256 private totalmoney;
     uint256 private buycontributionvalue;
     uint256 private sellcontributionvalue;
-    uint256 private totalsellercollection; 
     uint256 private buyrebate; 
     uint256 private sellrebate; 
     uint256 private fee; 
@@ -70,46 +68,48 @@ contract transaction is token {
   
     function Lastbuytime(address who) external view returns (uint256) {
         return _lastbuytime[who];    
-    }
+    }  
 
     function _UpdateLastbuytime(address buyer)  internal whenNotPaused{
         _lastbuytime[buyer] = now;  
     }
 
-    function Buycontributionvalue(address who) external view returns (uint256) {
-        return _buycontributionvalue[who];
-    }
+    function contributionvalue(address who, uint256 i) external view returns (uint256) {
+        if(i == 1){
+            return _buycontributionvalue[who];
+        }
+        if(i == 2){
+            return _sellcontributionvalue[who];
+        }
+    } 
 
-    function Sellcontributionvalue(address who) external view returns (uint256) {
-        return _sellcontributionvalue[who];
-    }
-    
-    function _UpdateBuycontributionvalue(address target, uint256 totalprice)  internal whenNotPaused{
+    function _Updatecontributionvalue(address target, uint256 totalprice, uint256 i)  internal whenNotPaused{
         if(totalprice >= 2000){
-            _buycontributionvalue[target] += 1;  
+            if(i == 1){
+                _buycontributionvalue[target] += 1;
+            }
+            if(i == 2){
+                _sellcontributionvalue[target] += 1;
+            }  
         }
     }
 
-    function _UpdateSellcontributionvalue(address target, uint256 totalprice)  internal whenNotPaused{
-        if(totalprice >= 2000){
-            _sellcontributionvalue[target] += 1;  
+    function TotalbuyerpaymenORsellercollection(address who, uint256 i) external view returns (uint256) {
+        if(i == 1){
+            return _totalbuyerpayment[who];
+        }
+        if(i == 2){
+            return _totalsellercollection[who];
         }
     }
 
-    function Totalbuyerpayment(address who) external view returns (uint256) {
-        return _totalbuyerpayment[who];
-    }
-
-    function Totalsellercollection(address who) external view returns (uint256) {
-        return _totalsellercollection[who];
-    }
-
-    function _UpdateTotalbuyerpayment(address target, uint256 totalprice)  internal whenNotPaused{
-            _totalbuyerpayment[target] += totalprice;  
-    }
-
-    function _UpdateTotalsellercollection(address target, uint256 totalprice)  internal whenNotPaused{
+    function _UpdateTotalbuyerpaymentORsellercollection(address target, uint256 totalprice, uint256 i)  internal whenNotPaused{
+        if(i == 1){
+            _totalbuyerpayment[target] += totalprice; 
+        }
+        if(i == 2){
             _totalsellercollection[target] += totalprice;  
+        }    
     }
 
     function Sellercredit(address who, uint256 i) external view returns (uint256) {
@@ -145,17 +145,17 @@ contract transaction is token {
 
     function _IncreaseSellercredit(address target)  internal whenNotPaused{
         if(_sellercredit[target][2] == 50){ 
-            if(_sellercredit[target][0] < 30){ 
+            if(_sellercredit[target][0] < 40){ 
                 _sellercredit[target][0] += 1;  
                 _sellercredit[target][2] = 0;          
             }
-            if(_sellercredit[target][0] == 30){   
-                _sellercredit[target][0] = 30;  
+            if(_sellercredit[target][0] == 40){   
+                _sellercredit[target][0] = 40;  
             }
         } 
         if(_sellercredit[target][2] > 50){   
             needAddsellercredit = _sellercredit[target][2] / 50;  
-            realAddsellercredit = min(needAddsellercredit, 30 - _sellercredit[target][0]);  
+            realAddsellercredit = min(needAddsellercredit, 40 - _sellercredit[target][0]);  
             _sellercredit[target][0] += realAddsellercredit;    
             _sellercredit[target][2] -= realAddsellercredit * 50;  
         }
@@ -163,8 +163,7 @@ contract transaction is token {
 
     function LastbuytimeScore(address who) internal whenNotPaused returns (uint8) {
         lastbuytimeInSeconds = _lastbuytime[who]; 
-        currTimeInSeconds = now; 
-        timeinterval = currTimeInSeconds - lastbuytimeInSeconds; 
+        timeinterval = now - lastbuytimeInSeconds; 
         if(timeinterval >= MONTH_IN_SECONDS * 3){ 
             return 0;
         }
@@ -198,21 +197,26 @@ contract transaction is token {
         }
     }
 
-    function TotalbuyerpaymentScore(address who) internal whenNotPaused returns (uint8) {
-        totalbuyerpayment = _totalbuyerpayment[who]; 
-        if(totalbuyerpayment >= 20000000){ 
+    function TotalbuyerpaymentScoreORsellercollectionScore(address who, uint256 i) internal whenNotPaused returns (uint8) {
+        if(i == 1){
+            totalmoney = _totalbuyerpayment[who]; 
+        }
+        if(i == 2){
+            totalmoney = _totalsellercollection[who]; 
+        }
+        if(totalmoney >= 20000000){ 
             return 20;
         }
-        if(totalbuyerpayment < 20000000 && totalbuyerpayment >= 2000000){ 
+        if(totalmoney < 20000000 && totalmoney >= 2000000){ 
             return 15;
         }
-        if(totalbuyerpayment < 2000000 && totalbuyerpayment >= 200000){  
+        if(totalmoney < 2000000 && totalmoney >= 200000){  
             return 10;
         }
-        if(totalbuyerpayment < 200000 && totalbuyerpayment >= 20000){  
+        if(totalmoney < 200000 && totalmoney >= 20000){  
             return 5;
         }
-        if(totalbuyerpayment < 20000 && totalbuyerpayment >= 0){ 
+        if(totalmoney < 20000 && totalmoney >= 0){ 
             return 0;
         }
     }
@@ -227,11 +231,6 @@ contract transaction is token {
         if(buyergrade == 2){ 
             return 30;       
         }
-    }
-
-    function BuyerTotalScore(address who, uint8 buyergrade) internal whenNotPaused returns (uint8) { 
-        _buyerTotalScore = LastbuytimeScore(who) + BuycontributionvalueScore(who) + TotalbuyerpaymentScore(who) + BuyergradeScore(buyergrade); 
-        return _buyerTotalScore;
     }
 
     function SellcontributionvalueScore(address who) internal whenNotPaused returns (uint8) {
@@ -252,36 +251,11 @@ contract transaction is token {
             return 0;
         }
     }
-    
-    function TotalsellercollectionScore(address who) internal whenNotPaused returns (uint8) {
-        totalsellercollection = _totalsellercollection[who]; 
-        if(totalsellercollection >= 20000000){  
-            return 20;
-        }
-        if(totalsellercollection < 20000000 && totalsellercollection >= 2000000){  
-            return 15;
-        }
-        if(totalsellercollection < 2000000 && totalsellercollection >= 200000){  
-            return 10;
-        }
-        if(totalsellercollection < 200000 && totalsellercollection >= 20000){  
-            return 5;
-        }
-        if(totalsellercollection < 20000 && totalsellercollection >= 0){ 
-            return 0;
-        }
-    }
-
-    function SellerTotalScore(address who) internal whenNotPaused returns (uint8) { 
-        sellercreditScore = _sellercredit[who][0]; 
-        _sellerTotalScore = SellcontributionvalueScore(who) + TotalsellercollectionScore(who) + sellercreditScore; 
-        return _sellerTotalScore;
-    }
 
     function BuyRebate(uint256 totalprice, address who, uint8 buyergrade) internal whenNotPaused returns (uint256) { 
         
         fee = totalprice / feeProportion;      
-        _buyerTotalScore = BuyerTotalScore(who, buyergrade);    
+        _buyerTotalScore = LastbuytimeScore(who) + BuycontributionvalueScore(who) + TotalbuyerpaymentScoreORsellercollectionScore(who, 1) + BuyergradeScore(buyergrade);     
         if(_buyerTotalScore <= 100 && _buyerTotalScore >= 90){  
             buyrebate = fee * 9 / 10;
         }
@@ -317,8 +291,9 @@ contract transaction is token {
 
     function SellRebate(uint256 totalprice, address who) internal whenNotPaused returns (uint256) { 
         
-        commission = totalprice / commissionProportion;       
-        _sellerTotalScore = SellerTotalScore(who);     
+        commission = totalprice / commissionProportion;    
+        sellercreditScore = _sellercredit[who][0]; 
+        _sellerTotalScore = SellcontributionvalueScore(who) + TotalbuyerpaymentScoreORsellercollectionScore(who, 2) + sellercreditScore; 
         if(_sellerTotalScore <= 100 && _sellerTotalScore >= 90){  
             sellrebate = commission * 9 / 10;
         }
@@ -366,10 +341,10 @@ contract transaction is token {
         _transfer(address(this), _to, sellercollection); 
         buyrebate = BuyRebate(totalprice, _from, buyergrade); 
         _transfer(address(this), _from, buyrebate); 
-        _UpdateBuycontributionvalue(_from, totalprice);
-        _UpdateSellcontributionvalue(_to, totalprice);
-        _UpdateTotalbuyerpayment(_from, totalprice);
-        _UpdateTotalsellercollection(_to, totalprice);
+        _Updatecontributionvalue(_from, totalprice, 1);
+        _Updatecontributionvalue(_to, totalprice, 2);
+        _UpdateTotalbuyerpaymentORsellercollection(_from, totalprice, 1);
+        _UpdateTotalbuyerpaymentORsellercollection(_to, totalprice, 2);
         _UpdateRelatedSellercredit(_to, 2);
         _IncreaseSellercredit(_to);
         _DecreaseSellercredit(_to);
@@ -397,16 +372,16 @@ contract transaction is token {
             sellercollection = _Sellercollection(value);   
             sellercollection += SellRebate(value, _to[i]); 
             _transfer(address(this), _to[i], sellercollection); 
-            _UpdateSellcontributionvalue(_to[i], value);
-            _UpdateTotalsellercollection(_to[i], value);
+            _Updatecontributionvalue(_to[i], value, 2);
+            _UpdateTotalbuyerpaymentORsellercollection(_to[i], value, 2);
             _UpdateRelatedSellercredit(_to[i], 2);
             _IncreaseSellercredit(_to[i]);
             _DecreaseSellercredit(_to[i]);
         }
         buyrebate = BuyRebate(value * _to.length, _from, buyergrade); 
         _transfer(address(this), _from, buyrebate);
-        _UpdateBuycontributionvalue(_from, value * _to.length);
-        _UpdateTotalbuyerpayment(_from, value * _to.length); 
+        _Updatecontributionvalue(_from, value * _to.length, 1);
+        _UpdateTotalbuyerpaymentORsellercollection(_from, value * _to.length, 1);
         _UpdateLastbuytime(_from); 
 }
    

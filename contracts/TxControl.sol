@@ -45,7 +45,7 @@ contract TxControl is transaction {
         _;
     }
 
-    modifier checkBalanceOfBuyData(address buyer, uint256 value){
+    /*modifier checkBalanceOfBuyData(address buyer, uint256 value){
         require(_balances[buyer] > value);
         _;
     }
@@ -53,20 +53,20 @@ contract TxControl is transaction {
     modifier checkBalanceOfBuyRealTimeData(address buyer, uint256 value, uint32 accountsNumber){
         require(_balances[buyer] > value * accountsNumber);
         _;
-    }
+    } */
 
-    function () payable external { }
+    function () payable external { } 
     
-    function checkDataTxOwner(address buyer, uint256 i) public view returns(bool){
+   /* function checkDataTxOwner(address buyer, uint256 i) public view returns(bool){
         if(buyer == txList[i].buyer){
             return true;
         }
         else{
             return false;
         }
-    }
+    } */
 
-    function buyData(address _seller, uint8 _txType, uint256 _value, uint8 _buyerGrade) public checkBalanceOfBuyData(msg.sender, _value) returns(uint256){
+    function buyData(address _seller, uint8 _txType, uint256 _value, uint8 _buyerGrade) public returns(uint256){
         txSave memory txData = txSave({
             buyer: msg.sender,
             seller: _seller,
@@ -89,15 +89,15 @@ contract TxControl is transaction {
         emit confirmTx(i);
     }
 
-    function checkRealTimeTxOwner(address buyer, uint256 i) public view returns(bool){
+   /* function checkRealTimeTxOwner(address buyer, uint256 i) public view returns(bool){
         if(buyer == txRealTimeList[i].buyer){
             return true;
         }else{
             return false;
         }
-    }
+    } */
 
-    function buyRealTimeData(uint256 nonce, string memory _publicKeyCheck, string memory _ipOrEigenvalues, uint256 _value, uint32 _accountsNumber, uint8 _buyerGrade, uint64 _duration, uint256 _buyerId) public checkBalanceOfBuyRealTimeData(msg.sender, _value, _accountsNumber) returns(uint256, uint256){
+    function buyRealTimeData(uint256 nonce, string memory _publicKeyCheck, string memory _ipOrEigenvalues, uint256 _value, uint32 _accountsNumber, uint8 _buyerGrade, uint64 _duration, uint256 _buyerId) public returns(uint256, uint256){
         txSaveRealTime memory txRealTimeData = txSaveRealTime({
             buyer: msg.sender,
             publicKeyCheck: _publicKeyCheck,
