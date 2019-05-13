@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 contract DataControl{
     struct FileInfoSave {
-        uint256 number;  //设备唯一标识
+        bytes32 number;  //设备唯一标识
         uint256 file_number;  //文件序号
         uint8 data_type;  //数据类型
         string size;  //文件大小
@@ -57,7 +57,7 @@ contract DataControl{
         
     }
 
-    function set_file_list(uint256 number, uint256 file_number, uint8 data_type, string memory size, address user, string memory period, string memory area, string memory file_addr, string memory file_hash, string memory key) public{
+    function set_file_list(bytes32 number, uint256 file_number, uint8 data_type, string memory size, address user, string memory period, string memory area, string memory file_addr, string memory file_hash, string memory key) public{
         FileInfoSave memory data = FileInfoSave({
             number: number,
             file_number: file_number,
@@ -74,8 +74,8 @@ contract DataControl{
         if(fileInfoSave.length % length == 0) emit FileInfoOk(length);
     }
 
-    function get0_1() public view onlyOwner returns(uint256[] memory, uint256[] memory){
-        uint256[] memory _number = new uint256[](length);
+    function get0_1() public view onlyOwner returns(bytes32[] memory, uint256[] memory){
+        bytes32[] memory _number = new bytes32[](length);
         uint256[] memory _file_number = new uint256[](length);
         uint256[] memory i = new uint256[](2);
         i[1] = start + length;
